@@ -8,7 +8,11 @@ import GameControl from './GameEngine/GameControl.js';
 import GameLevelStarWars from './GameLevelStarWars.js';
 import GameLevelMeteorBlaster from './GameLevelMeteorBlaster.js';
 import GameLevelMinesweeper from './GameLevelMinesweeper.js';
+import Goldfish from './Goldfish.js';
 import GameLevelEnd from './GameLevelEnd.js';
+import GameLevelNether from './GameLevelNether.js';
+
+
 
 class GameLevelDesert {
   constructor(gameEnv) {
@@ -25,7 +29,235 @@ class GameLevelDesert {
         pixels: {height: 580, width: 1038}
     };
 
-
+    const sprite_src_nether_portal = path + "/images/gamify/nether_portal_small.png";
+    const sprite_greet_nether_portal = "Portal to the Nether - Face the Ghast's challenge!";
+    // Replace the nether portal sprite data with this version for better collision:
+    // Try replacing your nether portal data with this - using EXACT same settings as Tux:
+    // Replace your nether portal sprite data with this fixed version:
+    const sprite_data_nether_portal = {
+    id: 'Nether-Portal-Entry',
+    greeting: sprite_greet_nether_portal,
+    src: sprite_src_nether_portal,
+    
+    // Use more standard settings that work with collision system
+    SCALE_FACTOR: 6,                    
+    ANIMATION_RATE: 50,                 
+    pixels: {height: 800, width: 640},  
+    INIT_POSITION: { x: (width / 3), y: (height / 3)}, 
+    orientation: {rows: 1, columns: 1}, 
+    down: {row: 0, start: 0, columns: 1},
+    
+    // INCREASED hitbox size for better collision detection
+    hitbox: { widthPercentage: 0.5, heightPercentage: 0.5 }, 
+    
+    dialogues: [
+        "The Nether awaits brave adventurers.",
+        "Beware of the Ghast and its fireballs!",
+        "Use the SPACEBAR to hit back fireballs at the Ghast.",
+        "Only the skilled can survive the Nether challenge.",
+        "The portal burns with otherworldly flame.",
+        "Are you ready to face the ultimate test?"
+    ],
+    
+    // Add reaction function like other NPCs
+    reaction: function() {
+        if (this.dialogueSystem) {
+            this.showReactionDialogue();
+        } else {
+            console.log(sprite_greet_nether_portal);
+        }
+    },
+    
+    interact: function() {
+        // Clear any existing dialogue first
+        if (this.dialogueSystem && this.dialogueSystem.isDialogueOpen()) {
+            this.dialogueSystem.closeDialogue();
+            return;
+        }
+        
+        // Show a dialogue with buttons immediately
+        if (this.dialogueSystem) {
+            this.dialogueSystem.showDialogue(
+                "Do you dare enter the Nether? The Ghast awaits with deadly fireballs. Press Y to enter, N to stay.",
+                "Nether Portal",
+                this.spriteData.src
+            );
+            
+            // Create the buttons container
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.display = 'flex';
+            buttonContainer.style.justifyContent = 'space-between';
+            buttonContainer.style.marginTop = '10px';
+            
+            // Create the Yes button
+            const yesButton = document.createElement('button');
+            yesButton.textContent = "Enter Nether (Y)";
+            yesButton.style.padding = '8px 15px';
+            yesButton.style.background = '#cc3300';
+            yesButton.style.color = 'white';
+            yesButton.style.border = 'none';
+            yesButton.style.borderRadius = '5px';
+            yesButton.style.cursor = 'pointer';
+            yesButton.style.marginRight = '10px';
+            yesButton.style.fontWeight = 'bold';
+            
+            // Create the No button
+            const noButton = document.createElement('button');
+            noButton.textContent = "Stay Safe (N)";
+            noButton.style.padding = '8px 15px';
+            noButton.style.background = '#666';
+            noButton.style.color = 'white';
+            noButton.style.border = 'none';
+            noButton.style.borderRadius = '5px';
+            noButton.style.cursor = 'pointer';
+            
+            // Add keyboard listener for Y/N keys
+            const keyListener = (event) => {
+                if (event.key.toLowerCase() === 'y') {
+                    event.preventDefault();
+                    yesButton.click();
+                    document.removeEventListener('keydown', keyListener);
+                } else if (event.key.toLowerCase() === 'n') {
+                    event.preventDefault();
+                    noButton.click();
+                    document.removeEventListener('keydown', keyListener);
+                }
+            };
+            document.addEventListener('keydown', keyListener);
+            
+            // Add button functionality
+            yesButton.onclick = () => {
+                document.removeEventListener('keydown', keyListener);
+                if (this.dialogueSystem) {
+                    this.dialogueSystem.closeDialogue();
+                }
+                
+                // Clean up the current game state - ADDED DESTROYING LOGIC
+                if (gameEnv && gameEnv.gameControl) {
+                    // Store reference to the current game control
+                    const gameControl = gameEnv.gameControl;
+                    
+                    // Create dramatic transition effect
+                    const transitionOverlay = document.createElement('div');
+                    Object.assign(transitionOverlay.style, {
+                        position: 'fixed',
+                        top: '0',
+                        left: '0',
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(45deg, #cc3300, #ff6600, #cc3300, #990000)',
+                        backgroundSize: '400% 400%',
+                        animation: 'netherPortal 2s ease-in-out',
+                        opacity: '0',
+                        transition: 'opacity 1s ease-in-out',
+                        zIndex: '9999',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flexDirection: 'column',
+                        fontFamily: 'Arial, sans-serif',
+                        color: 'white',
+                        fontSize: '24px',
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.8)'
+                    });
+                    
+                    // Add animation keyframes
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        @keyframes netherPortal {
+                            0% { background-position: 0% 50%; }
+                            50% { background-position: 100% 50%; }
+                            100% { background-position: 0% 50%; }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    const loadingText = document.createElement('div');
+                    loadingText.textContent = 'Entering the Nether...';
+                    loadingText.style.marginBottom = '20px';
+                    transitionOverlay.appendChild(loadingText);
+                    
+                    const warningText = document.createElement('div');
+                    warningText.textContent = 'Use SPACEBAR to hit back fireballs!';
+                    warningText.style.fontSize = '18px';
+                    warningText.style.color = '#ffff99';
+                    transitionOverlay.appendChild(warningText);
+                    
+                    document.body.appendChild(transitionOverlay);
+                    
+                    console.log("Starting Nether level transition...");
+                    
+                    // Fade in
+                    requestAnimationFrame(() => {
+                        transitionOverlay.style.opacity = '1';
+                        
+                        // After transition, switch to Nether level
+                        setTimeout(() => {
+                            // ADDED: Clean up current level properly (same as End Portal)
+                            if (gameControl.currentLevel) {
+                                // Properly destroy the current level
+                                console.log("Destroying current level...");
+                                gameControl.currentLevel.destroy();
+                                
+                                // Force cleanup of any remaining canvases
+                                const gameContainer = document.getElementById('gameContainer');
+                                const oldCanvases = gameContainer.querySelectorAll('canvas:not(#gameCanvas)');
+                                oldCanvases.forEach(canvas => {
+                                    console.log("Removing old canvas:", canvas.id);
+                                    canvas.parentNode.removeChild(canvas);
+                                });
+                            }
+                            
+                            console.log("Setting up Nether level...");
+                            
+                            // IMPORTANT: Store the original level classes for return journey
+                            gameControl._originalLevelClasses = gameControl.levelClasses;
+                            
+                            // Switch to Nether level
+                            gameControl.levelClasses = [GameLevelNether];
+                            gameControl.currentLevelIndex = 0;
+                            gameControl.isPaused = false;
+                            
+                            console.log("Transitioning to Nether level...");
+                            gameControl.transitionToLevel();
+                            
+                            // Fade out overlay
+                            setTimeout(() => {
+                                transitionOverlay.style.opacity = '0';
+                                setTimeout(() => {
+                                    document.body.removeChild(transitionOverlay);
+                                    document.head.removeChild(style);
+                                }, 1000);
+                            }, 500);
+                        }, 2000);
+                    });
+                }
+            };
+            
+            noButton.onclick = () => {
+                document.removeEventListener('keyListener', keyListener);
+                if (this.dialogueSystem) {
+                    this.dialogueSystem.closeDialogue();
+                }
+            };
+            
+            // Add buttons to container
+            buttonContainer.appendChild(yesButton);
+            buttonContainer.appendChild(noButton);
+            
+            // Add buttons to dialogue box
+            const dialogueBox = document.getElementById('custom-dialogue-box-' + this.dialogueSystem.id);
+            if (dialogueBox) {
+                const closeBtn = dialogueBox.querySelector('button');
+                if (closeBtn) {
+                    dialogueBox.insertBefore(buttonContainer, closeBtn);
+                } else {
+                    dialogueBox.appendChild(buttonContainer);
+                }
+            }
+        }
+    }
+};
     // Player data for Chillguy
     const sprite_src_chillguy = path + "/images/gamify/chillguy.png"; // be sure to include the path
     const CHILLGUY_SCALE_FACTOR = 5;
@@ -48,7 +280,7 @@ class GameLevelDesert {
         upLeft: {row: 2, start: 0, columns: 3, rotate: Math.PI/16 },
         upRight: {row: 1, start: 0, columns: 3, rotate: -Math.PI/16 },
         hitbox: { widthPercentage: 0.45, heightPercentage: 0.2 },
-        keypress: { up: 87, left: 65, down: 83, right: 68 } // W, A, S, D
+        keypress: { up: 87, left: 65, down: 83, right: 68 }, // W, A, S, D
     };
 
     
@@ -63,6 +295,7 @@ class GameLevelDesert {
         src: sprite_src_tux,
         SCALE_FACTOR: 8,
         ANIMATION_RATE: 50,
+        isEnemy: true,
         pixels: {height: 256, width: 352},
         INIT_POSITION: { x: (width / 2), y: (height / 2)},
         orientation: {rows: 8, columns: 11 },
@@ -136,140 +369,151 @@ class GameLevelDesert {
           }
       };
     
-      const sprite_src_endportal = path + "/images/gamify/exitportalfull.png";
-      const sprite_greet_endportal = "Teleport to the End? Press E";
-      const sprite_data_endportal = {
-          id: 'End Portal',
-          greeting: sprite_greet_endportal,
-          src: sprite_src_endportal,
-          SCALE_FACTOR: 6,
-          ANIMATION_RATE: 100,
-          pixels: {width: 2029, height: 2025},
-          INIT_POSITION: { x: (width * 2 / 5), y: (height * 1 / 10)},
-          orientation: {rows: 1, columns: 1 },
-          down: {row: 0, start: 0, columns: 1 },
-          hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
-          // Add dialogues array for random messages
-          dialogues: [
-              "The End dimension awaits brave explorers.",
-              "Through this portal lies a realm of floating islands and strange creatures.",
-              "The Enderman guards ancient treasures. Who knows what else lurks beyond this portal?",
-              "Many have entered. Few have returned.",
-              "The void calls to you. Will you answer?",
-              "The End is not truly the end, but a new beginning.",
-              "Strange things await you beyond this portal..",
-              "Prepare yourself. The journey beyond won't be easy."
-          ],
-          reaction: function() {
-              // Don't show any reaction dialogue - this prevents the first alert
-              // The interact function will handle all dialogue instead
-          },
-          interact: function() {
-              // Clear any existing dialogue first to prevent duplicates
-              if (this.dialogueSystem && this.dialogueSystem.isDialogueOpen()) {
-                  this.dialogueSystem.closeDialogue();
-              }
-              
-              // Create a new dialogue system if needed
-              if (!this.dialogueSystem) {
-                  this.dialogueSystem = new DialogueSystem();
-              }
-              
-              // Show portal dialogue with buttons
-              this.dialogueSystem.showDialogue(
-                  "Do you wish to enter The End dimension?",
-                  "End Portal",
-                  this.spriteData.src
-              );
-              
-              // Add buttons directly to the dialogue
-              this.dialogueSystem.addButtons([
-                  {
-                      text: "Enter Portal",
-                      primary: true,
-                      action: () => {
-                          this.dialogueSystem.closeDialogue();
-                          
-                          // Clean up the current game state
-                          if (gameEnv && gameEnv.gameControl) {
-                              // Store reference to the current game control
-                              const gameControl = gameEnv.gameControl;
-                              
-                              // Create fade overlay for transition
-                              const fadeOverlay = document.createElement('div');
-                              Object.assign(fadeOverlay.style, {
-                                  position: 'fixed',
-                                  top: '0',
-                                  left: '0',
-                                  width: '100%',
-                                  height: '100%',
-                                  backgroundColor: '#000',
-                                  opacity: '0',
-                                  transition: 'opacity 1s ease-in-out',
-                                  zIndex: '9999'
-                              });
-                              document.body.appendChild(fadeOverlay);
-                              
-                              console.log("Starting End level transition...");
-                              
-                              // Fade in
-                              requestAnimationFrame(() => {
-                                  fadeOverlay.style.opacity = '1';
-                                  
-                                  // After fade in, transition to End level
-                                  setTimeout(() => {
-                                      // Clean up current level properly
-                                      if (gameControl.currentLevel) {
-                                          // Properly destroy the current level
-                                          console.log("Destroying current level...");
-                                          gameControl.currentLevel.destroy();
-                                          
-                                          // Force cleanup of any remaining canvases
-                                          const gameContainer = document.getElementById('gameContainer');
-                                          const oldCanvases = gameContainer.querySelectorAll('canvas:not(#gameCanvas)');
-                                          oldCanvases.forEach(canvas => {
-                                              console.log("Removing old canvas:", canvas.id);
-                                              canvas.parentNode.removeChild(canvas);
-                                          });
-                                      }
-                                      
-                                      console.log("Setting up End level...");
-                                      
-                                      // IMPORTANT: Store the original level classes for return journey
-                                      gameControl._originalLevelClasses = gameControl.levelClasses;
-                                      
-                                      // Change the level classes to GameLevelEnd
-                                      gameControl.levelClasses = [GameLevelEnd];
-                                      gameControl.currentLevelIndex = 0;
-                                      
-                                      // Make sure game is not paused
-                                      gameControl.isPaused = false;
-                                      
-                                      // Start the End level with the same control
-                                      console.log("Transitioning to End level...");
-                                      gameControl.transitionToLevel();
-                                      
-                                      // Fade out overlay
-                                      setTimeout(() => {
-                                          fadeOverlay.style.opacity = '0';
-                                          setTimeout(() => {
-                                              document.body.removeChild(fadeOverlay);
-                                          }, 1000);
-                                      }, 500);
-                                  }, 1000);
-                              });
-                          }
-                      }
-                  },
-                  {
-                      text: "Not Ready",
-                      action: () => {
-                          this.dialogueSystem.closeDialogue();
-                      }
-                  }
-              ]);
-          }
-      }
+        const sprite_src_endportal = path + "/images/gamify/exitportalfull.png";
+        const sprite_greet_endportal = "Teleport to the End? Press E";
+        const sprite_data_endportal = {
+            id: 'End Portal',
+            greeting: sprite_greet_endportal,
+            src: sprite_src_endportal,
+            SCALE_FACTOR: 6,
+            ANIMATION_RATE: 100,
+            pixels: {width: 2029, height: 2025},
+            INIT_POSITION: { x: (width * 2 / 5), y: (height * 1 / 10)},
+            orientation: {rows: 1, columns: 1 },
+            down: {row: 0, start: 0, columns: 1 },
+            hitbox: { widthPercentage: 0.1, heightPercentage: 0.2 },
+            // Add dialogues array for random messages
+            dialogues: [
+                "The End dimension awaits brave explorers.",
+                "Through this portal lies a realm of floating islands and strange creatures.",
+                "The Enderman guards ancient treasures. Who knows what else lurks beyond this portal?",
+                "Many have entered. Few have returned.",
+                "The void calls to you. Will you answer?",
+                "The End is not truly the end, but a new beginning.",
+                "Strange things await you beyond this portal..",
+                "Prepare yourself. The journey beyond won't be easy."
+            ],
+            reaction: function() {
+                // Make sure we use 'this' safely - if dialogueSystem is undefined, create it
+                const dialogueSystem = new DialogueSystem({
+                    dialogues: [this.spriteData?.greeting || "Portal to The End"]
+                });
+            },
+            interact: function() {
+                // For NPCs that should show random dialogue messages
+                if (this.spriteData.dialogues) {
+                    // Create a new DialogueSystem instance
+                    const dialogueSystem = new DialogueSystem({
+                        dialogues: this.spriteData.dialogues
+                    });
+                    
+                    // Show random dialogue
+                    const randomIndex = Math.floor(Math.random() * this.spriteData.dialogues.length);
+                    dialogueSystem.showDialogue(
+                        this.spriteData.dialogues[randomIndex], 
+                        this.spriteData.id, 
+                        this.spriteData.src
+                    );
+                }
+                
+                // For NPCs with buttons (like End Portal), create a new dialogue and add buttons directly:
+                if (this.spriteData.id === "End Portal") {
+                    const dialogueSystem = new DialogueSystem();
+                    dialogueSystem.showDialogue(
+                        "Do you wish to enter The End dimension?",
+                        "End Portal",
+                        this.spriteData.src
+                    );
+                    
+                    // Add buttons directly to the dialogue
+                    dialogueSystem.addButtons([
+                        {
+                            text: "Enter Portal",
+                            primary: true,
+                            action: () => {
+                                dialogueSystem.closeDialogue();
+                                
+                                // Clean up the current game state
+                                if (gameEnv && gameEnv.gameControl) {
+                                    // Store reference to the current game control
+                                    const gameControl = gameEnv.gameControl;
+                                    
+                                    // Create fade overlay for transition
+                                    const fadeOverlay = document.createElement('div');
+                                    Object.assign(fadeOverlay.style, {
+                                        position: 'fixed',
+                                        top: '0',
+                                        left: '0',
+                                        width: '100%',
+                                        height: '100%',
+                                        backgroundColor: '#000',
+                                        opacity: '0',
+                                        transition: 'opacity 1s ease-in-out',
+                                        zIndex: '9999'
+                                    });
+                                    document.body.appendChild(fadeOverlay);
+                                    
+                                    console.log("Starting End level transition...");
+                                    
+                                    // Fade in
+                                    requestAnimationFrame(() => {
+                                        fadeOverlay.style.opacity = '1';
+                                        
+                                        // After fade in, transition to End level
+                                        setTimeout(() => {
+                                            // Clean up current level properly
+                                            if (gameControl.currentLevel) {
+                                                // Properly destroy the current level
+                                                console.log("Destroying current level...");
+                                                gameControl.currentLevel.destroy();
+                                                
+                                                // Force cleanup of any remaining canvases
+                                                const gameContainer = document.getElementById('gameContainer');
+                                                const oldCanvases = gameContainer.querySelectorAll('canvas:not(#gameCanvas)');
+                                                oldCanvases.forEach(canvas => {
+                                                    console.log("Removing old canvas:", canvas.id);
+                                                    canvas.parentNode.removeChild(canvas);
+                                                });
+                                            }
+                                            
+                                            console.log("Setting up End level...");
+                                            
+                                            // IMPORTANT: Store the original level classes for return journey
+                                            gameControl._originalLevelClasses = gameControl.levelClasses;
+                                            
+                                            // Change the level classes to GameLevelEnd
+                                            gameControl.levelClasses = [GameLevelEnd];
+                                            gameControl.currentLevelIndex = 0;
+                                            
+                                            // Make sure game is not paused
+                                            gameControl.isPaused = false;
+                                            
+                                            // Start the End level with the same control
+                                            console.log("Transitioning to End level...");
+                                            gameControl.transitionToLevel();
+                                            
+                                            // Fade out overlay
+                                            setTimeout(() => {
+                                                fadeOverlay.style.opacity = '0';
+                                                setTimeout(() => {
+                                                    document.body.removeChild(fadeOverlay);
+                                                }, 1000);
+                                            }, 500);
+                                        }, 1000);
+                                    });
+                                }
+                            }
+                        },
+                        {
+                            text: "Not Ready",
+                            action: () => {
+                                dialogueSystem.closeDialogue();
+                            }
+                        }
+                    ]);
+                }
+            }
+        };
           
       const sprite_src_stocks = path + "/images/gamify/stockguy.png";
       const sprite_greet_stocks = "Darn it, I lost some money on the stock market.. come with me to help me out?";
@@ -353,7 +597,7 @@ class GameLevelDesert {
                   
                   // Add button functionality
                   yesButton.onclick = () => {
-                      window.location.href = "https://pages.opencodingsociety.com/stocks/home";
+                      window.location.href = "https://nighthawkcoders.github.io/portfolio_2025/stocks/home";
                   };
                   
                   noButton.onclick = () => {
@@ -381,7 +625,7 @@ class GameLevelDesert {
                   // Original functionality as fallback
                   const confirmTeleport = window.confirm("Teleport to the stock market?");
                   if (confirmTeleport) {
-                      window.location.href = "https://pages.opencodingsociety.com/stocks/home";
+                      window.location.href = "https://nighthawkcoders.github.io/portfolio_2025/stocks/home";
                   }
               }
           }
@@ -469,7 +713,7 @@ class GameLevelDesert {
                 
                 // Add button functionality
                 yesButton.onclick = () => {
-                    window.location.href = "https://pages.opencodingsociety.com/gamify/casinohomepage";
+                    window.location.href = "https://nighthawkcoders.github.io/portfolio_2025/gamify/casinohomepage";
                 };
                 
                 noButton.onclick = () => {
@@ -497,7 +741,7 @@ class GameLevelDesert {
                 // Original functionality as fallback
                 const confirmTeleport = window.confirm("Teleport to gambling hub?");
                 if (confirmTeleport) {
-                    window.location.href = "https://pages.opencodingsociety.com/gamify/casinohomepage";
+                    window.location.href = "https://nighthawkcoders.github.io/portfolio_2025/gamify/casinohomepage";
                 }
             }
         }
@@ -510,6 +754,7 @@ class GameLevelDesert {
         id: 'Robot',
         greeting: sprite_greet_robot,
         src: sprite_src_robot,
+        isEnemy: true,
         SCALE_FACTOR: 10,
         ANIMATION_RATE: 100,
         pixels: {height: 316, width: 627},
@@ -724,6 +969,7 @@ class GameLevelDesert {
       { class: Npc, data: sprite_data_stocks },
       { class: Npc, data: sprite_data_crypto },
       { class: Npc, data: sprite_data_minesweeper },
+      { class: Npc, data: sprite_data_nether_portal },
       { class: Npc, data: sprite_data_endportal }  // Added End Portal NPC
     ];
   }
