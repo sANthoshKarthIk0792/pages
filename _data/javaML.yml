@@ -1,9 +1,9 @@
 Title: "Java ML"
-Description: "Teaching Java ML utilizing Tablesaw, Weka, and Smile"
+Description: "Tablesaw, Weka, Smile, and Practice"
 Topics:
   - title: "Tablesaw"
     image: "/javaml/tablesaw.jpeg"
-    link: "/javaml/tablesaw"
+    link: "/javaml/intro/tablesaw"
     alt: "tablesaw"
     subtitle: "Data Structures in Action"
     keyPoints:
@@ -15,7 +15,7 @@ Topics:
       Learn Java fundamentals through data manipulation. Tablesaw makes it easy to apply loops, classes, and arrays in real-world datasets—bridging AP CSA topics with practical data science.
   - title: "Weka"
     image: "/javaml/weka.jpeg"
-    link: "/javaml/weka"
+    link: "/javaml/intro/weka"
     alt: "weka"
     subtitle: "Primitive Types for ML Data"
     keyPoints:
@@ -28,7 +28,7 @@ Topics:
 
   - title: "Smile"
     image: "/javaml/smile.jpg"
-    link: "/javaml/smile"
+    link: "/javaml/intro/smile"
     alt: "smile"
     subtitle: "OOP Meets Machine Learning"
     keyPoints:
@@ -41,7 +41,7 @@ Topics:
 
   - title: "Practice"
     image: "/javaml/wine.jpeg"
-    link: "/javaml/practice"
+    link: "/javaml/intro/practice"
     alt: "wine"
     subtitle: "Wine Quality Analysis"
     keyPoints:

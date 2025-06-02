@@ -1,5 +1,5 @@
 ---
-layout: fortunefinders
+layout: fortunefindersBank
 permalink: /leaderboard/overall-leaderboard
 title: Leaderboard
 ---

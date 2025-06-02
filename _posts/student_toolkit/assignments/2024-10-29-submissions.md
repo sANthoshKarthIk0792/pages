@@ -6,79 +6,54 @@ permalink: /student/submissions
 ---
 
 <div class="container mx-auto px-4 py-8 max-w-3xl">
-    <div class="bg-transparent rounded-lg shadow-lg p-6 mb-6">
-        <h1 class="text-3xl font-bold text-gray-700 mb-6 border-b pb-2">Assignment Submissions</h1>
+    <div class="bg-neutral-800 rounded-lg shadow-md p-6 mb-6 border border-neutral-700">
+        <h1 class="text-3xl font-bold text-gray-100 mb-6 border-b border-neutral-700 pb-2">Assignment Submissions</h1>
         <div class="mb-4 flex items-center justify-between">
-            <span class="text-sm font-medium text-gray-700">Enable group submissions</span>
-            <label class="inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="myToggle" class="sr-only peer">
-                <div class="relative w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gray-400 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
-            </label>
+        <span class="text-sm font-medium text-gray-300">Enable group submissions</span>
+        <label class="inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="myToggle" class="sr-only" onchange="toggleSwitch(this)">
+            <div id="customToggleTrack" class="relative w-11 h-6 bg-neutral-600 rounded-full transition-colors duration-300">
+                <div id="customToggleCircle" class="absolute top-[2px] left-[2px] h-5 w-5 rounded-full border border-gray-500 transition-all duration-300"></div>
+            </div>
+        </label>
         </div>
         <div class="space-y-4">
             <div class="flex justify-between items-center">
-                <label for="assignment-select" class="text-sm font-medium text-gray-700">Assignment</label>
-                <select id="assignment-select" class="w-2/3 px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500">
+                <label for="assignment-select" class="text-sm font-medium text-gray-300">Assignment</label>
+                <select id="assignment-select" class="w-2/3 px-3 py-2 rounded-lg border border-gray-600 bg-neutral-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="" disabled selected>Select an Assignment</option>
                 </select>
             </div>
-            <div id="Assignment-Content" class="p-4 bg-gray-100 rounded-md mb-4 border-l-4 border-gray-500 text-gray-800">
-                Assignment-Content
+            <div id="Assignment-Content" class="p-4 bg-neutral-700 rounded-md mb-4 border-l-4 border-indigo-500 text-gray-100">
+                Select an Assignment to see the description here
             </div>
-            <div id="timer-container" class="p-3 rounded-md border border-gray-400">
-                <p id="time-left" class="font-bold text-gray-700">Select assignment to view time left here</p>
+            <div id="timer-container" class="p-3 rounded-md border border-gray-600 bg-neutral-800">
+                <p id="time-left" class="font-bold text-gray-100">Select assignment to view time left here</p>
             </div>
-            <div id="Group Submit" class="hidden space-y-4 mt-6 p-4 rounded-md border border-gray-400">
+            <div id="group-submit" class="hidden space-y-4 mt-6 p-4 rounded-md border border-gray-400">
                 <div class="flex justify-between items-center">
-                    <label for="searchBar" class="text-sm font-medium text-gray-700">Search Group Members</label>
-                    <input type="text" id="searchBar" placeholder="Search for a name..." onkeyup="filterNames()"
-                        class="w-2/3 px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500">
-                </div>
-                <div class="flex items-center">
-                    <label for="rowsPerPage" class="text-sm font-medium text-gray-700 mr-2">Rows per page:</label>
-                    <select id="rowsPerPage" onchange="changeRowsPerPage()"
-                        class="px-2 py-1 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500">
-                        <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="200">200</option>
-                        <option value="1000">1000</option>
-                        <option value="2000">2000</option>
+                    <label for="group-select" class="text-sm font-medium text-white-700">Select Group</label>
+                    <select id="group-select" class="w-2/3 px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        <option value="" disabled selected>Select a Group</option>
                     </select>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full bg-gray-100 rounded-lg overflow-hidden">
-                        <thead class="bg-gray-200">
-                            <tr>
-                                <th class="py-2 px-4 text-left text-gray-700">Name</th>
-                                <th class="py-2 px-4 text-left text-gray-700">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="namesTableBody" class="divide-y divide-gray-300"></tbody>
-                    </table>
-                </div>
-                <div id="Review-Group" class="p-3 rounded-md font-medium text-gray-700 border border-gray-400">
-                    Group Members:
-                </div>
             </div>
 
             <div class="flex justify-between items-center mt-4">
-                <label for="submissionContent" class="text-sm font-medium text-gray-700">Submission Content</label>
+                <label for="submissionContent" class="text-sm font-medium text-gray-300">Submission Content</label>
                 <textarea id="submissionContent" rows="5" required
-                    class="w-2/3 px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"></textarea>
+                    class="w-2/3 px-3 py-2 rounded-lg border border-gray-600 bg-neutral-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
             </div>
 
             <div class="flex justify-between items-center mt-4">
-                <label for="comments" class="text-sm font-medium text-gray-700">Comments</label>
+                <label for="comments" class="text-sm font-medium text-gray-300">Comments</label>
                 <textarea id="comments" rows="5"
-                    class="w-2/3 px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"></textarea>
+                    class="w-2/3 px-3 py-2 rounded-lg border border-gray-600 bg-neutral-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
             </div>
 
             <div class="mt-6">
                 <button id="submit-assignment"
-                    class="w-full md:w-auto px-6 py-3 bg-gray-700 text-white font-medium rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600 transition">
+                    class="w-full md:w-auto px-6 py-3 bg-indigo-500 text-white font-medium rounded-lg hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
                     Submit Assignment
                 </button>
             </div>
@@ -86,19 +61,19 @@ permalink: /student/submissions
             <div id="outputBox" class="mt-4 p-3 rounded-md"></div>
 
             <div class="mt-8">
-                <h1 class="text-2xl font-bold text-gray-700 mb-2">Previous Submissions for:</h1>
-                <div id="Assignment-name" class="text-lg font-medium text-gray-700 mb-4">Assignment-Content</div>
+                <h1 class="text-2xl font-bold text-white-100 mb-2">Previous Submissions for:</h1>
+                <div id="Assignment-name" class="text-lg font-medium text-white-300 mb-4">Assignment-Content</div>
 
                 <div class="overflow-x-auto">
-                    <table id="submissions-table" class="min-w-full bg-gray-100 rounded-lg overflow-hidden">
-                        <thead class="bg-gray-200">
+                    <table id="submissions-table" class="min-w-full bg-neutral-700 rounded-lg overflow-hidden">
+                        <thead class="bg-neutral-800">
                             <tr>
-                                <th class="py-2 px-4 text-left text-gray-700">Submission Content</th>
-                                <th class="py-2 px-4 text-left text-gray-700">Grade</th>
-                                <th class="py-2 px-4 text-left text-gray-700">Feedback</th>
+                                <th class="py-2 px-4 text-left text-white-100">Submission Content</th>
+                                <th class="py-2 px-4 text-left text-white-100">Grade</th>
+                                <th class="py-2 px-4 text-left text-white-100">Feedback</th>
                             </tr>
                         </thead>
-                        <tbody id="submissions-tbody" class="divide-y divide-gray-300">
+                        <tbody id="submissions-tbody" class="divide-y divide-neutral-600">
                             <!-- Submissions will be populated here -->
                         </tbody>
                     </table>
@@ -118,21 +93,46 @@ permalink: /student/submissions
     let userId = -1;
     let StuName;
     let Student;
-    let people = [], filteredPeople = [], listofpeople = new Set(), currentPage = 1, rowsPerPage = 5, totalPages = 1;
-    let listofpeopleIds = new Set();
+    let groupId = null;
 
     document.getElementById("submit-assignment").addEventListener("click", Submit);
+
+    async function fetchGroups() {
+        const groupSelect = document.getElementById("group-select");
+        try {
+            const response = await fetch(javaURI+'/api/groups', fetchOptions);
+            if (!response.ok) throw new Error("Failed to fetch groups");
+            const groups = await response.json();
+            groupSelect.innerHTML = `<option value="" disabled selected>Select a Group</option>`;
+            groups.forEach(group => {
+                const option = document.createElement("option");
+                option.value = group.id;
+                option.textContent = group.name || `Group ${group.id}`;
+                groupSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Error fetching groups:", error);
+        }
+
+        groupSelect.addEventListener("change", () => {
+            groupId = groupSelect.value;
+        });
+    }
+
+    // Call when toggle is enabled
     document.getElementById("myToggle").addEventListener("change", function () {
         if (this.checked) {
-            console.log("Toggle is ON");
-            document.getElementById("Group Submit").style.display = "block";
+            document.getElementById("group-submit").style.display = "block";
+            fetchGroups();
         } else {
-            console.log("Toggle is OFF");
-            document.getElementById("Group Submit").style.display = "none";
+            document.getElementById("group-submit").style.display = "none";
+            groupId = null;
         }
     });
+
+    
     function disableGroupSubmit() {
-        document.getElementById("Group Submit").style.display = "none";
+        document.getElementById("group-submit").style.display = "none";
     }
     function Submit() {
         let urllink_submit = javaURI + "/api/submissions/submit/";
@@ -153,21 +153,19 @@ permalink: /student/submissions
         console.log(deadlineDate);
         console.log(deadlineDate - now);
 
-        console.log(listofpeopleIds);
-        const formData = new FormData();
-        formData.append('studentId', studentId);
-        formData.append('content', submissionContent);
-        formData.append('comment', comment);
-        formData.append('isLate', deadlineDate - now < 0);
-
-        console.log(Array.from(listofpeopleIds));
         const submissionData = {
-            assignmentId: assigmentId,
-            studentIds: Array.from(listofpeopleIds),
             content: submissionContent,
             comment: comment,
             isLate: deadlineDate - now < 0
         };
+
+        if (groupId) {
+            submissionData.isGroup = true;
+            submissionData.submitterId = parseInt(groupId);
+        } else {
+            submissionData.isGroup = false;
+            submissionData.submitterId = userId;
+        }
         console.log(JSON.stringify(submissionData));
 
         fetch(urllink_submit, {
@@ -283,7 +281,7 @@ permalink: /student/submissions
         const url_persons = `${javaURI}/api/person/get`;
         await fetch(url_persons, fetchOptions)
             .then(response => {
-                if (!response.ok) {
+                if (!response.ok) { 
                     throw new Error(`Spring server response: ${response.status}`);
                 }
                 return response.json();
@@ -294,7 +292,6 @@ permalink: /student/submissions
                 StuName = data.name;
                 let info = data.name + "," + String(data.id);
                 console.log(info);
-                addName(info);
 
             })
             .catch(error => {
@@ -304,13 +301,9 @@ permalink: /student/submissions
 
     async function fetchSubmissions() {
         const urllink = javaURI + "/api/submissions/getSubmissions";
-        const urllink2 = javaURI + "/assignment/" + assignIndex.toString();
-        const theUserId = await getUserId();
-        console.log("here");
         try {
             const response = await fetch(`${urllink}/${userId}`, fetchOptions);
             const Submissions = await response.json();
-            console.log("bruh");
             console.log(JSON.stringify(Submissions) + "------");
             populateSubmissionsTable(JSON.stringify(Submissions));
         } catch (error) {
@@ -326,121 +319,54 @@ permalink: /student/submissions
 
         submissions.forEach(submission => {
             const row = document.createElement('tr');
-            row.className = "hover:bg-indigo-50";
             console.log(submission.assignment?.id + " " + assignIndex + "$$$$$");
             if (submission.assignment?.id == assignIndex) {
                 console.log("SKIBBBB");
                 const contentCell = document.createElement('td');
                 contentCell.textContent = submission.content || 'N/A';
-                contentCell.className = 'py-2 px-4 text-gray-700';
+                contentCell.className = 'py-2 px-4 text-white-700';
                 row.appendChild(contentCell);
 
                 const gradeCell = document.createElement('td');
                 gradeCell.textContent = submission.grade || 'Ungraded';
                 gradeCell.className = 'py-2 px-4 font-medium';
                 if (submission.grade) {
-                    gradeCell.classList.add('text-green-600');
+                    gradeCell.classList.add('text-blue-600');
                 } else {
-                    gradeCell.classList.add('text-gray-500');
+                    gradeCell.classList.add('text-white-500');
                 }
                 row.appendChild(gradeCell);
                 console.log(submission.grade);
 
                 const feedbackCell = document.createElement('td');
                 feedbackCell.textContent = submission.feedback || 'No feedback yet';
-                feedbackCell.className = 'py-2 px-4 italic text-gray-600';
+                feedbackCell.className = 'py-2 px-4 italic text-white-600';
                 row.appendChild(feedbackCell);
 
                 tableBody.appendChild(row);
             }
         });
     }
-    
-    window.filterNames = function filterNames() {
-        const searchTerm = document.getElementById("searchBar").value.toLowerCase();
-        filteredPeople = people.filter(person => person.name.toLowerCase().includes(searchTerm));
-        totalPages = Math.ceil(filteredPeople.length / rowsPerPage);
-        currentPage = 1; // Reset to first page after filtering
-        populateTable(filteredPeople.slice(0, rowsPerPage));
-    };
 
-    window.addName = function (info) {
-        console.log(info.split(","));
-        info = info.split(",");
-        console.log("Added name:", info[0]);
-        listofpeople.add(info[0]);
-        listofpeopleIds.add(Number(info[1]));
-        console.log(listofpeople);
-        const reviewGroup = document.getElementById('Review-Group');
-        reviewGroup.textContent = "Group Members: " + Array.from(listofpeople).join(", ");
-        console.log(listofpeopleIds);
-    };
-
-    async function fetchAllStudents() {
-        try {
-            const response = await fetch(javaURI + "/api/people", fetchOptions);
-            if (!response.ok) throw new Error(`Error: ${response.status}`);
-            people = await response.json();
-            filteredPeople = people;
-            totalPages = Math.ceil(people.length / rowsPerPage);
-            populateTable(people.slice(0, rowsPerPage));
-        } catch (error) {
-            console.error("Error fetching names:", error);
-        }
-    }
-
-    window.changeRowsPerPage = function changeRowsPerPage() {
-        rowsPerPage = parseInt(document.getElementById("rowsPerPage").value);
-        currentPage = 1;
-        totalPages = Math.ceil(filteredPeople.length / rowsPerPage);
-        const startIdx = 0;
-        const endIdx = rowsPerPage;
-        populateTable(filteredPeople.slice(startIdx, endIdx));
-    };
-
-    window.updatePageInfo = function updatePageInfo() {
-        const pageInfo = document.getElementById("pageInfo");
-        if (pageInfo) {
-            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
-            document.getElementById("prevPage").disabled = currentPage === 1;
-            document.getElementById("nextPage").disabled = currentPage === totalPages;
-        }
-    };
-
-    function populateTable(names) {
-        const tableBody = document.getElementById("namesTableBody");
-        tableBody.innerHTML = "";
-        names.forEach(name => {
-            const row = document.createElement("tr");
-            row.className = "hover:bg-indigo-50";
-            let info = [name.name, name.id];
-
-            const nameCell = document.createElement("td");
-            nameCell.className = "py-2 px-4 text-gray-700";
-            nameCell.textContent = name.name;
-            row.appendChild(nameCell);
-
-            const actionCell = document.createElement("td");
-            actionCell.className = "py-2 px-4";
-            
-            const addButton = document.createElement("button");
-            addButton.className = "px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition";
-            addButton.textContent = "Add";
-            addButton.onclick = function() { addName(`${name.name},${name.id}`); };
-            
-            actionCell.appendChild(addButton);
-            row.appendChild(actionCell);
-            
-            tableBody.appendChild(row);
-        });
-        updatePageInfo();
-    }
-
-    fetchAllStudents();
     disableGroupSubmit();
     document.addEventListener("DOMContentLoaded", async () => {
         await getUserId();
         await fetchSubmissions();
         await fetchAssignments();
     });
+</script>
+<script type="text/javascript">
+    function toggleSwitch(checkbox) {
+        const track = document.getElementById('customToggleTrack');
+        const circle = document.getElementById('customToggleCircle');
+        if (checkbox.checked) {
+            track.classList.remove('bg-neutral-600');
+            track.classList.add('bg-indigo-600');
+            circle.style.left = '24px';
+        } else {
+            track.classList.remove('bg-indigo-600');
+            track.classList.add('bg-neutral-600');
+            circle.style.left = '2px';
+        }
+    }
 </script>
