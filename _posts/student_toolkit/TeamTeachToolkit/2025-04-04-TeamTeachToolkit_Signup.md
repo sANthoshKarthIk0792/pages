@@ -91,28 +91,17 @@ async function fetchTopics() {
 
 async function fetchAssignTopics(topic) {
   try {
-    let response = await fetch(`${javaURI}/api/submissions/assignment/${topic.id}`, fetchOptions);
+    let response = await fetch(`${javaURI}/api/assignments/assignedGraders/${topic.id}`, fetchOptions);
     let data = await response.json();
-    let assignments = Array.isArray(data) ? data : [];
+    let graders = Array.isArray(data) ? data : [];
 
     let studentsSet = new Set();
     let studentsTextArray = [];
 
-    assignments.forEach(assignment => {
-      if (Array.isArray(assignment.students)) {
-        assignment.students.forEach(s => {
-          if (!studentsSet.has(s.id)) {
-            studentsSet.add(s.id);
-            studentsTextArray.push(`${s.name} (${s.id})`);
-          }
-        });
-      } else if (assignment.students && typeof assignment.students === 'string') {
-        assignment.students.split(',').forEach(name => {
-          if (!studentsSet.has(name.trim())) {
-            studentsSet.add(name.trim());
-            studentsTextArray.push(name.trim());
-          }
-        });
+    graders.forEach(grader => {
+      if (!studentsSet.has(grader.id)) {
+        studentsSet.add(grader.id);
+        studentsTextArray.push(`${grader.name} (${grader.id})`);
       }
     });
 
@@ -156,7 +145,8 @@ async function addTopic() {
     return;
   }
 
-  let dueDate = formatDateToMMDDYYYY(rawDate);
+  // let dueDate = formatDateToMMDDYYYY(rawDate);
+  let dueDate = rawDate;
   const url = `${javaURI}/api/assignments/create?name=${encodeURIComponent(name)}&type=teamteach&description=${encodeURIComponent(description)}&points=1.0&dueDate=${encodeURIComponent(dueDate)}`;
 
   try {
@@ -180,19 +170,12 @@ async function signUpForTopic(id) {
     return;
   }
 
-  const data = {
-    assignmentId: id,
-    studentIds: [userId],
-    content: "test",
-    comment: "",
-    isLate: false
-  };
+  if (!confirm("Are you sure you want to sign up for this topic?")) return;
 
   try {
-    let response = await fetch(`${javaURI}/api/submissions/submit/${id}`, {
+    let response = await fetch(`${javaURI}/api/assignments/teamteach/signup/${id}`, {
+      ...fetchOptions,
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
     });
 
     if (response.ok) {

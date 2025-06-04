@@ -5,7 +5,14 @@ type: issues
 permalink: /crypto/portfolio
 ---
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Portfolio</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
 
 <style>
     body {
@@ -55,35 +62,7 @@ permalink: /crypto/portfolio
         width: 120px;
         transition: transform 0.2s;
     }
-    .balance-container {
-        background-color: #ffad00; /* Gold background */
-        padding: 20px;
-        border-radius: 10px;
-        text-align: center;
-        color: #fff;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 30px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.3s;
-    }
 
-    .balance-container:hover {
-        transform: scale(1.05);
-    }
-
-    .balance-title {
-        font-size: 1.2em;
-        font-weight: 600;
-        margin-bottom: 10px;
-    }
-
-    .balance-amount {
-        font-size: 2em;
-        font-weight: 700;
-    }
 
     .crypto-item:hover {
         transform: scale(1.05);
@@ -158,21 +137,69 @@ permalink: /crypto/portfolio
         border-radius: 5px;
         border: 1px solid #ccc;
     }
+
+    .error-message {
+        color: #f44336;
+        padding: 10px;
+        background-color: #ffebee;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+
+    .loading-message {
+        color: #2196F3;
+        padding: 10px;
+        background-color: #e3f2fd;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+    .modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 420px; /* Reduce width for iframe */
+    max-height: 90vh;  /* Prevent it from overflowing vertically */
+    overflow-y: auto;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+    color: #333;
+}
+
+/* Make the chart smaller */
+.chart-container {
+    height: 200px; /* Shrink the chart height */
+    margin: 20px 0;
+}
+
+canvas#crypto-chart {
+    max-height: 180px;
+    width: 100%;
+}
 </style>
 
-
 <div class="container">
-    <!-- <div class="balance-container">
-        <div class="balance-title">Current Balance</div>
-        <div class="balance-amount" id="user-balance">Loading...</div>
-    </div> -->
-    <div class="crypto-list" id="crypto-list-container"></div>
-    <button class="btn btn-buy" onclick="viewHoldings()">View Current Holdings</button>
-    <button class="btn btn-sell" onclick="viewHistory()">View Purchase History</button>
-
-<!-- Modal -->
-</div>
+    <h1>Crypto Portfolio</h1>
     
+
+    
+    <div class="crypto-list" id="crypto-list-container">
+        <div class="loading-message">Loading cryptocurrencies...</div>
+    </div>
+    
+    <button class="btn btn-buy" onclick="openHoldingsModal()">View Current Holdings</button>
+    <button class="btn btn-sell" onclick="openHistoryModal()">View Purchase History</button>
+    <button class="btn btn-buy" onclick="openCompareModal()">Compare Cryptos</button>
+        
+    <!-- Search Bar -->
+    <div style="margin-top: 20px;">
+        <input type="text" id="crypto-search" placeholder="Search Crypto..." oninput="searchCrypto()">
+        <div id="search-results"></div>
+    </div>
+</div>
+
+<!-- Main Modal -->
 <div class="modal" id="crypto-modal">
     <div class="modal-content">
         <span class="modal-close" onclick="closeModal()">&times;</span>
@@ -190,13 +217,38 @@ permalink: /crypto/portfolio
         <button class="btn btn-sell" onclick="sellCrypto()">Sell</button>
         <button class="btn btn-close" onclick="closeModal()">Close</button>
     </div>
-        <!-- Search Bar -->
-    <div class="container">
-        <input type="text" id="crypto-search" placeholder="Search Crypto..." oninput="searchCrypto()">
-        <div id="search-results"></div>
+</div>
+<!-- 🟢 Holdings Modal -->
+<div class="modal" id="holdingsModal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeHoldingsModal()">&times;</span>
+        <h3>Your Crypto Holdings</h3>
+        <table id="cryptoHoldingsModalTable">
+            <tr>
+                <th>Crypto</th>
+                <th>Amount</th>
+            </tr>
+        </table>
     </div>
 </div>
-<!-- Comparison Section in Modal -->
+
+<!-- 🔴 History Modal -->
+<div class="modal" id="historyModal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeHistoryModal()">&times;</span>
+        <h3>Crypto Transaction History</h3>
+        <table id="fullCryptoHistoryTable">
+            <tr>
+                <th>Type</th>
+                <th>Crypto Amount</th>
+                <th>Dollar Value</th>
+                <th>Timestamp</th>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- Comparison Modal -->
 <div class="modal" id="compare-modal">
     <div class="modal-content">
         <span class="modal-close" onclick="closeCompareModal()">&times;</span>
@@ -211,16 +263,123 @@ permalink: /crypto/portfolio
         <button class="btn btn-close" onclick="closeCompareModal()">Close</button>
     </div>
 </div>
-<!-- Button to trigger comparison modal -->
-<div class="container">
-    <button class="btn btn-buy" onclick="openCompareModal()">Compare Cryptos</button>
-</div>
 
 <script type="module">
-    import { javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
+import { javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
+
+// 🟢 Modal: Holdings
+function openHoldingsModal() {
+    document.getElementById("holdingsModal").style.display = "flex";
+    updateCryptoHoldingsTable();
+}
+function closeHoldingsModal() {
+    document.getElementById("holdingsModal").style.display = "none";
+}
+
+// 🔴 Modal: History
+function openHistoryModal() {
+    document.getElementById("historyModal").style.display = "flex";
+    updateCryptoHistoryTable();
+}
+
+function closeHistoryModal() {
+    document.getElementById("historyModal").style.display = "none";
+}
+
+// 🛠️ Update Holdings Table
+async function updateCryptoHoldingsTable() {
+    try {
+        const response = await fetch(`${javaURI}/api/crypto/holdings?email=${encodeURIComponent(userEmail)}`);
+        const data = await response.json();
+        const holdingsString = data?.holdings;
+        const table = document.getElementById("cryptoHoldingsModalTable");
+
+        table.innerHTML = `<tr><th>Crypto</th><th>Amount</th></tr>`;
+        if (!holdingsString || holdingsString.trim() === "") {
+            table.innerHTML += '<tr><td colspan="2">No holdings</td></tr>';
+            return;
+        }
+
+        holdingsString.split(",").forEach(item => {
+            const [cryptoId, amount] = item.split(":");
+            const row = document.createElement("tr");
+            row.innerHTML = `<td>${cryptoId.trim()}</td><td>${parseFloat(amount).toFixed(6)}</td>`;
+            table.appendChild(row);
+        });
+    } catch (err) {
+        console.error("🚨 Error loading holdings:", err);
+    }
+}
+
+// 🛠️ Update History Table
+async function updateCryptoHistoryTable() {
+    try {
+        const response = await fetch(`${javaURI}/api/crypto/history?email=${encodeURIComponent(userEmail)}`);
+        const data = await response.json();
+        const history = data?.cryptoHistory || "";
+        const table = document.getElementById("fullCryptoHistoryTable");
+
+        table.innerHTML = `
+            <tr>
+                <th>Type</th>
+                <th>Crypto Amount</th>
+                <th>Dollar Value</th>
+                <th>Timestamp</th>
+            </tr>`;
+
+        if (!history.trim()) return;
+
+        history.split("\n").forEach(tx => {
+            const parsed = parseTransaction(tx);
+            if (parsed) table.appendChild(createTransactionRow(parsed));
+        });
+    } catch (err) {
+        console.error("🚨 Error loading history:", err);
+    }
+}
+
+function parseTransaction(tx) {
+    const regex = /(Bought|Sold)\s([\d.]+)\s([A-Z]+)\sfor\s\$([\d.]+)\sat\s([\d-:\s]+)/;
+    const match = tx.match(regex);
+    if (!match) return null;
+    return {
+        type: match[1],
+        amount: `${match[2]} ${match[3]}`,
+        value: `$${parseFloat(match[4]).toFixed(2)}`,
+        timestamp: match[5]
+    };
+}
+
+function createTransactionRow({ type, amount, value, timestamp }) {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${type}</td><td>${amount}</td><td>${value}</td><td>${timestamp}</td>`;
+    return row;
+}
+
 
     let userEmail = "";
-    let userBalance = localStorage.getItem("userBalance");
+    let userBalance = 0;
+    let cryptoChart;
+
+    // Initialize the application
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("🚀 DOM fully loaded, initializing app...");
+        initializeApp();
+    });
+
+    async function initializeApp() {
+        try {
+            await fetchUser();
+            await fetchCryptos();
+            
+            // Set up periodic refresh
+            setInterval(fetchCryptos, 30000); // Refresh every 30 seconds
+            setInterval(fetchUserBalance, 10000); // Refresh balance every 10 seconds
+        } catch (error) {
+            console.error("❌ Error initializing app:", error);
+            showError("Failed to initialize application");
+        }
+    }
 
     async function fetchUser() {
         try {
@@ -228,152 +387,202 @@ permalink: /crypto/portfolio
             if (response.ok) {
                 const userInfo = await response.json();
                 userEmail = userInfo.email;
-                console.log("User email:", userEmail);
-                document.getElementById('display-username').textContent = userInfo.name;
-                localStorage.setItem("userEmail", userEmail);
-                fetchUserBalance(); // Fetch balance after getting the email
+                console.log("✅ User email:", userEmail);
+                await fetchUserBalance();
             } else if (response.status === 401 || response.status === 201) {
-                console.log("Guest");
-                document.getElementById('display-username').textContent = "Guest";
-                document.getElementById('user-balance').innerText = "0.00";
+                console.log("👤 Guest user");
+                userEmail = "guest";
+            } else {
+                throw new Error(`Failed to fetch user: ${response.status}`);
             }
         } catch (error) {
-            console.error("Error fetching user:", error);
+            console.error("❌ Error fetching user:", error);
+            userEmail = "guest";
         }
     }
 
-        // Make sure this function is in the global scope
+    async function fetchUserBalance() {
+        if (userEmail === "guest") return;
+        
+        try {
+            const response = await fetch(`${javaURI}/api/person/get`, fetchOptions);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const userData = await response.json();
+            
+            if (userData.banks && userData.banks.balance !== undefined) {
+                userBalance = Number(userData.banks.balance).toFixed(2);
+                console.log("✅ User balance updated:", userBalance);
+            }
+            
+        } catch (error) {
+            console.error("❌ Error loading balance:", error);
+            userBalance = "0.00";
+        }
+    }
+
+    async function fetchCryptos() {
+        console.log("📡 Fetching cryptocurrencies...");
+        
+        const container = document.getElementById('crypto-list-container');
+        if (!container) {
+            console.error("❌ Container element not found");
+            return;
+        }
+
+        try {
+            // Show loading state
+            container.innerHTML = '<div class="loading-message">Loading cryptocurrencies...</div>';
+
+            const response = await fetch(`${javaURI}/api/crypto/live`, fetchOptions);
+            
+            console.log("📊 API Response Status:", response.status);
+            console.log("📊 API Response Headers:", response.headers);
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch crypto data. Status: ${response.status} ${response.statusText}`);
+            }
+
+            const responseText = await response.text();
+            // console.log("📋 Raw response:", responseText);
+
+            let cryptos;
+            try {
+                cryptos = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error("❌ Failed to parse JSON:", parseError);
+                throw new Error("Invalid JSON response from server");
+            }
+
+            console.log("✅ Parsed Cryptos:", cryptos);
+
+            // Clear container
+            container.innerHTML = '';
+
+            if (!Array.isArray(cryptos)) {
+                console.error("❌ Expected array, got:", typeof cryptos);
+                throw new Error("Invalid data format: expected array");
+            }
+
+            if (cryptos.length === 0) {
+                container.innerHTML = '<div class="error-message">No cryptocurrencies available</div>';
+                return;
+            }
+
+            // Render cryptocurrencies
+            cryptos.forEach((crypto, index) => {
+                console.log(`🔢 Processing crypto [${index}]:`, crypto);
+
+                // Validate crypto object
+                if (!crypto || typeof crypto !== 'object') {
+                    console.warn("⚠️ Invalid crypto object:", crypto);
+                    return;
+                }
+
+                const name = crypto.name || crypto.id || 'Unknown';
+                const symbol = crypto.symbol || '';
+                const price = typeof crypto.price === 'number' ? crypto.price : 
+                             typeof crypto.current_price === 'number' ? crypto.current_price : 0;
+
+                const item = document.createElement('div');
+                item.className = 'crypto-item';
+                item.innerHTML = `
+                    <strong>${name}${symbol ? ` (${symbol.toUpperCase()})` : ''}</strong><br>
+                    $${price.toFixed(2)}
+                `;
+                
+                item.onclick = () => openModal(crypto);
+                container.appendChild(item);
+            });
+
+            console.log(`✅ Successfully rendered ${cryptos.length} cryptocurrencies`);
+
+        } catch (error) {
+            console.error("❌ Error in fetchCryptos():", error);
+            showError(`Failed to load cryptocurrencies: ${error.message}`);
+        }
+    }
+
+    function showError(message) {
+        const container = document.getElementById('crypto-list-container');
+        if (container) {
+            container.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+    }
+
+    // Search functionality
     async function searchCrypto() {
         const query = document.getElementById('crypto-search').value.trim();
         const resultsContainer = document.getElementById('search-results');
+        
         if (query.length < 2) {
             resultsContainer.innerHTML = "";
             return;
         }
+        
         try {
             const response = await fetch(`${javaURI}/api/crypto/search?cryptoId=${encodeURIComponent(query)}`, fetchOptions);
+            
             if (!response.ok) {
                 resultsContainer.innerHTML = "<p>No results found</p>";
                 return;
             }
+            
             const crypto = await response.json();
             resultsContainer.innerHTML = `
-                <div class="crypto-item" onclick="openModal(${JSON.stringify(crypto)})">
+                <div class="crypto-item" onclick="openModal(${JSON.stringify(crypto).replace(/"/g, '&quot;')})">
                     <strong>${crypto.name} (${crypto.symbol})</strong><br>
                     Price: $${crypto.price.toFixed(2)}
                 </div>
             `;
         } catch (error) {
-            console.error("Error searching crypto:", error);
-        }
-    }
-    window.searchCrypto = searchCrypto;
-
-// Make sure your HTML uses the function correctly, like this:
-// <input type="text" id="crypto-search" oninput="searchCrypto()" placeholder="Search cryptocurrencies...">
-    function updateBalance(balance) {
-        const formattedBalance = parseFloat(balance).toFixed(2);
-        document.getElementById('user-balance').innerText = formattedBalance;
-        localStorage.setItem("userBalance", formattedBalance);
-    }
-    window.openCompareModal = function () {
-        document.getElementById('compare-modal').style.display = 'flex';
-    };
-    window.closeCompareModal = function () {
-        document.getElementById('compare-modal').style.display = 'none';
-        document.getElementById('compare-result').innerHTML = "";
-    };
-    window.compareCryptos = async function () {
-        const cryptoId1 = document.getElementById('crypto-compare-1').value.trim();
-        const cryptoId2 = document.getElementById('crypto-compare-2').value.trim();
-        const days = document.getElementById('compare-days').value;
-        if (!cryptoId1 || !cryptoId2 || !days) {
-            alert("Please fill all fields.");
-            return;
-        }
-        try {
-            const response = await fetch(`${javaURI}/api/crypto/compare?cryptoId1=${encodeURIComponent(cryptoId1)}&cryptoId2=${encodeURIComponent(cryptoId2)}&days=${days}`, fetchOptions);
-            if (!response.ok) throw new Error("Failed to fetch comparison data.");
-            const data = await response.json();
-            const resultDiv = document.getElementById('compare-result');
-            resultDiv.innerHTML = `
-                <p><strong>${data.cryptoId1}:</strong> ${data.cryptoId1ChangePercent.toFixed(2)}%</p>
-                <p><strong>${data.cryptoId2}:</strong> ${data.cryptoId2ChangePercent.toFixed(2)}%</p>
-            `;
-        } catch (error) {
-            console.error("Error comparing cryptos:", error);
-            alert("Error fetching comparison data.");
-        }
-    };
-
-    async function fetchUserBalance() {
-        try {
-            const response = await fetch(`${javaURI}/api/person/get`, fetchOptions);
-            
-            if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-            throw new Error("Response is not JSON");
-            }
-
-            const userData = await response.json();
-            
-            // Ensure the balance element exists
-            const balanceElement = document.getElementById('user-balance');
-            if (!balanceElement) {
-            throw new Error("Balance element not found in DOM");
-            }
-            
-            // Format balance with proper decimal places
-            const balance = Number(userData.banks.balance).toFixed(2x);
-            balanceElement.textContent = `$${balance}`;
-            
-        } catch (error) {
-            console.error("Error loading balance:", error);
-            const balanceElement = document.getElementById('user-balance');
-            if (balanceElement) {
-            balanceElement.textContent = "$0.00";
-            }
+            console.error("❌ Error searching crypto:", error);
+            resultsContainer.innerHTML = "<p>Error searching cryptocurrencies</p>";
         }
     }
 
-    setInterval(fetchUserBalance, 5000);
+    // Modal functions
+    function openModal(crypto) {
+        console.log("🔍 Opening modal for:", crypto);
+        
+        const name = crypto.name || crypto.id || 'Unknown';
+        const price = typeof crypto.price === 'number' ? crypto.price : 
+                     typeof crypto.current_price === 'number' ? crypto.current_price : 0;
+        const change = crypto.changePercentage || crypto.price_change_percentage_24h || 0;
+        
+        document.getElementById('modal-crypto-name').innerText = name;
+        document.getElementById('modal-crypto-price').innerText = price.toFixed(2);
+        document.getElementById('modal-crypto-change').innerText = change.toFixed(2);
+        document.getElementById('crypto-modal').style.display = 'flex';
+        
+        // Fetch trend data
+        const symbol = crypto.symbol || crypto.id || name.toLowerCase();
+        fetchCryptoTrend(symbol);
+    }
 
-    fetchUser();
-
-    async function fetchCryptos() {
-        try {
-            const response = await fetch(`${javaURI}/api/crypto/live`, fetchOptions);
-            if (!response.ok) throw new Error(`Failed to fetch crypto data: ${response.status}`);
-            const container = document.getElementById('crypto-list-container');
-            container.innerHTML = '';
-            const cryptos = await response.json();
-            cryptos.forEach(crypto => {
-                const item = document.createElement('div');
-                item.className = 'crypto-item';
-                item.innerHTML = `<strong>${crypto.name}</strong><br>$${crypto.price.toFixed(2)}`;
-                item.onclick = () => openModal(crypto);
-                container.appendChild(item);
-            });
-        } catch (error) {
-            console.error('Error fetching cryptos:', error);
+    function closeModal() {
+        document.getElementById('crypto-modal').style.display = 'none';
+        if (cryptoChart) {
+            cryptoChart.destroy();
+            cryptoChart = null;
         }
     }
 
-    let cryptoChart;
     async function fetchCryptoTrend(cryptoId) {
         try {
             const response = await fetch(`${javaURI}/api/crypto/trend?cryptoId=${cryptoId}&days=7`, fetchOptions);
             if (!response.ok) throw new Error("Failed to fetch trend data");
+            
             const prices = await response.json();
-
+            
             const ctx = document.getElementById('crypto-chart').getContext('2d');
             if (cryptoChart) {
                 cryptoChart.destroy();
             }
+            
             cryptoChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -385,63 +594,151 @@ permalink: /crypto/portfolio
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
                         fill: true
                     }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
                 }
             });
         } catch (error) {
-            console.error("Error fetching trend data:", error);
+            console.error("❌ Error fetching trend data:", error);
         }
     }
 
-    window.openModal = function (crypto) {
-        document.getElementById('modal-crypto-name').innerText = crypto.name;
-        document.getElementById('modal-crypto-price').innerText = crypto.price.toFixed(2);
-        document.getElementById('modal-crypto-change').innerText = crypto.changePercentage.toFixed(2);
-        document.getElementById('crypto-modal').style.display = 'flex';
-        fetchCryptoTrend(crypto.symbol.toLowerCase());
-    };
-
-    window.closeModal = function () {
-        document.getElementById('crypto-modal').style.display = 'none';
-    };
-
-    window.buyCrypto = async function () {
+    // Trading functions
+    async function buyCrypto() {
         const cryptoId = document.getElementById('modal-crypto-name').innerText;
         const usdAmount = document.getElementById('buy-amount').value;
-        if (usdAmount) {
-            try {
-                const response = await fetch(`${javaURI}/api/crypto/buy`, {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: userEmail, cryptoId, usdAmount })
-                });
-                const message = await response.text();
-                alert(message);
-                fetchCryptos(); // Refresh data
-            } catch (error) {
-                console.error("Error buying crypto:", error);
-            }
+        
+        if (!usdAmount || usdAmount <= 0) {
+            alert("Please enter a valid amount");
+            return;
         }
-    };
+        
+        if (userEmail === "guest") {
+            alert("Please log in to buy cryptocurrencies");
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${javaURI}/api/crypto/buy`, {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: userEmail, cryptoId, usdAmount: parseFloat(usdAmount) })
+            });
+            
+            const message = await response.text();
+            alert(message);
+            
+            if (response.ok) {
+                document.getElementById('buy-amount').value = '';
+                await fetchUserBalance();
+            }
+        } catch (error) {
+            console.error("❌ Error buying crypto:", error);
+            alert("Error processing purchase");
+        }
+    }
 
-    window.sellCrypto = async function () {
+    async function sellCrypto() {
         const cryptoId = document.getElementById('modal-crypto-name').innerText;
         const cryptoAmount = document.getElementById('sell-amount').value;
-        if (cryptoAmount) {
-            try {
-                const response = await fetch(`${javaURI}/api/crypto/sell`, {
-                    method: 'POST',
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: userEmail, cryptoId, cryptoAmount })
-                });
-                const message = await response.text();
-                alert(message);
-                fetchCryptos(); // Refresh data
-            } catch (error) {
-                console.error("Error selling crypto:", error);
-            }
+        
+        if (!cryptoAmount || cryptoAmount <= 0) {
+            alert("Please enter a valid amount");
+            return;
         }
-    };
+        
+        if (userEmail === "guest") {
+            alert("Please log in to sell cryptocurrencies");
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${javaURI}/api/crypto/sell`, {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: userEmail, cryptoId, cryptoAmount: parseFloat(cryptoAmount) })
+            });
+            
+            const message = await response.text();
+            alert(message);
+            
+            if (response.ok) {
+                document.getElementById('sell-amount').value = '';
+                await fetchUserBalance();
+            }
+        } catch (error) {
+            console.error("❌ Error selling crypto:", error);
+            alert("Error processing sale");
+        }
+    }
 
-    fetchUserBalance();
-    fetchCryptos();
-</script>a
+    // Comparison functions
+    function openCompareModal() {
+        document.getElementById('compare-modal').style.display = 'flex';
+    }
+
+    function closeCompareModal() {
+        document.getElementById('compare-modal').style.display = 'none';
+        document.getElementById('compare-result').innerHTML = "";
+    }
+
+    async function compareCryptos() {
+        const cryptoId1 = document.getElementById('crypto-compare-1').value.trim();
+        const cryptoId2 = document.getElementById('crypto-compare-2').value.trim();
+        const days = document.getElementById('compare-days').value;
+        
+        if (!cryptoId1 || !cryptoId2 || !days) {
+            alert("Please fill all fields.");
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${javaURI}/api/crypto/compare?cryptoId1=${encodeURIComponent(cryptoId1)}&cryptoId2=${encodeURIComponent(cryptoId2)}&days=${days}`, fetchOptions);
+            
+            if (!response.ok) throw new Error("Failed to fetch comparison data.");
+            
+            const data = await response.json();
+            const resultDiv = document.getElementById('compare-result');
+            
+            resultDiv.innerHTML = `
+                <p><strong>${data.cryptoId1}:</strong> ${data.cryptoId1ChangePercent.toFixed(2)}%</p>
+                <p><strong>${data.cryptoId2}:</strong> ${data.cryptoId2ChangePercent.toFixed(2)}%</p>
+            `;
+        } catch (error) {
+            console.error("❌ Error comparing cryptos:", error);
+            alert("Error fetching comparison data.");
+        }
+    }
+
+    // Placeholder functions for buttons that don't have implementations yet
+    function viewHoldings() {
+        alert("Holdings view - implementation needed");
+    }
+
+    function viewHistory() {
+        alert("Purchase history view - implementation needed");
+    }
+
+    // Make functions globally available
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.buyCrypto = buyCrypto;
+    window.sellCrypto = sellCrypto;
+    window.openCompareModal = openCompareModal;
+    window.closeCompareModal = closeCompareModal;
+    window.compareCryptos = compareCryptos;
+    window.searchCrypto = searchCrypto;
+    // window.viewHoldings = viewHoldings;
+    // window.viewHistory = viewHistory;
+    window.openHoldingsModal = openHoldingsModal;
+    window.closeHoldingsModal = closeHoldingsModal;
+    window.openHistoryModal = openHistoryModal;
+    window.closeHistoryModal = closeHistoryModal;
+
+
+</script>
+
+</body>
+</html>

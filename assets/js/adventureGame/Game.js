@@ -1,3 +1,4 @@
+import GameControl from './GameEngine/GameControl.js';
 class Game {
     constructor(environment) {
         this.environment = environment;
@@ -12,6 +13,9 @@ class Game {
         this.gname = null;
 
         this.initUser();
+        const gameLevelClasses = environment.gameLevelClasses;
+        this.gameControl = new GameControl(this, gameLevelClasses);
+        this.gameControl.start();
     }
 
     static main(environment) {
